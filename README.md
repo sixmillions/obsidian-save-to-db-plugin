@@ -95,9 +95,18 @@ If you have multiple URLs, you can also do:
 
 See https://github.com/obsidianmd/obsidian-api
 
+## Plugin Api
+
+> https://docs.obsidian.md/Reference/TypeScript+API/Plugin/loadData
 
 ## icon
+
+> https://docs.obsidian.md/Plugins/User+interface/Icons
 
 > https://lucide.dev/
 
 注意：有个别图标没有
+
+## DB
+
+> https://developers.cloudflare.com/workers/tutorials/postgres
