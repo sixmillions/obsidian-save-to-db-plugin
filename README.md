@@ -94,3 +94,10 @@ If you have multiple URLs, you can also do:
 ## API Documentation
 
 See https://github.com/obsidianmd/obsidian-api
+
+
+## icon
+
+> https://lucide.dev/
+
+注意：有个别图标没有
