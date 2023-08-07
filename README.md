@@ -110,3 +110,15 @@ See https://github.com/obsidianmd/obsidian-api
 ## DB
 
 > https://developers.cloudflare.com/workers/tutorials/postgres
+
+```sql
+create table ob_post (
+  id BIGSERIAL primary key,
+  file_path VARCHAR(1024) not null unique,
+  cnt VARCHAR,
+  created_by VARCHAR(50) default 'ob',
+  created_at TIMESTAMP default NOW(),
+  last_modified_by VARCHAR(50) default 'ob',
+  last_modified_at TIMESTAMP default NOW()
+);
+```
