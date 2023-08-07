@@ -87,7 +87,7 @@ CREATE TABLE tt_tag
 (
     id               BIGSERIAL PRIMARY KEY,
     slug             VARCHAR(50) NOT NULL UNIQUE,
-    tag_name         VARCHAR(50) NOT NULL,
+    tag_name         VARCHAR(50),
     thumbnail        VARCHAR(1024),
     icon             VARCHAR(1024),
     deleted          SMALLINT    DEFAULT 0,
@@ -122,7 +122,8 @@ CREATE TABLE tr_post_tag
     created_by       VARCHAR(50) DEFAULT 'sys',
     created_at       TIMESTAMP   DEFAULT NOW(),
     last_modified_by VARCHAR(50) DEFAULT 'sys',
-    last_modified_at TIMESTAMP   DEFAULT NOW()
+    last_modified_at TIMESTAMP   DEFAULT NOW(),
+	CONSTRAINT tr_post_tag_uk_post_id_tag_id UNIQUE (post_id, tag_id)
 );
 
 -- 注释
@@ -144,7 +145,7 @@ CREATE TABLE tt_category
     id               BIGSERIAL PRIMARY KEY,
     slug             VARCHAR(50) NOT NULL UNIQUE,
     pid              bigint      DEFAULT 0,
-    category_name    VARCHAR(50) NOT NULL,
+    category_name    VARCHAR(50),
     thumbnail        VARCHAR(1024),
     icon             VARCHAR(1024),
     description      VARCHAR(8192),
@@ -184,7 +185,8 @@ CREATE TABLE tr_post_category
     created_by       VARCHAR(50) DEFAULT 'sys',
     created_at       TIMESTAMP   DEFAULT NOW(),
     last_modified_by VARCHAR(50) DEFAULT 'sys',
-    last_modified_at TIMESTAMP   DEFAULT NOW()
+    last_modified_at TIMESTAMP   DEFAULT NOW(),
+	CONSTRAINT tr_post_category_uk_post_id_category_id UNIQUE (post_id, category_id)
 );
 
 -- 注释

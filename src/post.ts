@@ -3,16 +3,15 @@ import { Pool } from 'pg'
 import { MyData, PostInfo } from './model'
 import { getNoteInfo } from './util'
 
-export const savePost = async (vault: Vault, mydata: MyData) => {
-  // 数据库连接
-  const pool = new Pool(mydata.mySetting.db)
-  // 插入或者更新语句（根据文章path判断）
-  const upsertCntSql = `
+// 插入或者更新语句（根据文章path判断）
+const upsertCntSql = `
   INSERT INTO tt_content (ob_path, cnt, created_at) VALUES ($1, $2, $3)
   ON CONFLICT(ob_path) DO UPDATE SET cnt = EXCLUDED.cnt, last_modified_at = now()
   RETURNING *
-  `
-  const upsertPostInfoSql = `
+`
+
+// 插入或者更新文章信息（根据文章id判断）
+const upsertPostInfoSql = `
   INSERT INTO tt_post (
     id, slug, title, thumbnail, summary, 
     status, top_priority, word_count, allow_comment, published_time, 
@@ -36,7 +35,28 @@ export const savePost = async (vault: Vault, mydata: MyData) => {
     last_modified_by=EXCLUDED.last_modified_by,
     last_modified_at = now()
   RETURNING *
-  `
+`
+
+const upsertTagSql = `
+  INSERT INTO tt_tag (slug) VALUES ($1) ON CONFLICT(slug) DO NOTHING RETURNING *
+`
+const upsertTrTagSql = `
+  INSERT INTO tr_post_tag (post_id, tag_id)
+  SELECT $1 as post_id, id as tag_id FROM tt_tag where slug = $2
+  ON CONFLICT(post_id, tag_id) DO NOTHING RETURNING *
+`
+const upsertCategorySql = `
+  INSERT INTO tt_category (slug) VALUES ($1) ON CONFLICT(slug) DO NOTHING RETURNING *
+`
+const upsertTrCategorySql = `
+  INSERT INTO tr_post_category (post_id, category_id)
+  SELECT $1 as post_id, id as category_id FROM tt_tag where slug = $2
+  ON CONFLICT(post_id, category_id) DO NOTHING RETURNING *
+`
+
+export const savePost = async (vault: Vault, mydata: MyData) => {
+  // 数据库连接
+  const pool = new Pool(mydata.mySetting.db)
   // 获取全部MD文档
   const files = vault.getMarkdownFiles()
   for (let i = 0; i < files.length; i++) {
@@ -52,16 +72,29 @@ export const savePost = async (vault: Vault, mydata: MyData) => {
     const cntValues = [path, fileCnt, new Date(file.stat.ctime)]
     // 文章保存到数据库
     const cntSqlRes = await pool.query(upsertCntSql, cntValues)
-    console.log(path, ' save-to-db, id: ', cntSqlRes.rows[0].id)
+    const postId = parseInt(cntSqlRes.rows[0].id)
+    console.log(path, ' save-to-db, id: ', postId)
+
     // 解析front-matter
     const postInfo = await getNoteInfo(fileCnt, file)
-    const postInfoValues = postInfoHandler(postInfo, parseInt(cntSqlRes.rows[0].id), file)
+    const postInfoValues = postInfoHandler(postInfo, postId, file)
+    // 文章基本信息处理
     const postInfoSqlRes = await pool.query(upsertPostInfoSql, postInfoValues)
     console.log('post info save success:', postInfoSqlRes.rows[0].title)
-    // 同步后文章状态设置为“已同步”
+
+    // 处理tag和category
+    for (const tag of postInfo.tags) {
+      await pool.query(upsertTagSql, [tag.trim()])
+      await pool.query(upsertTrTagSql, [postId, tag.trim()])
+    }
+    for (const category of postInfo.categories) {
+      await pool.query(upsertCategorySql, [category.trim()])
+      await pool.query(upsertTrCategorySql, [postId, category.trim()])
+    }
+    // 同步后文章状态设置为“已同步” (地址引用，这里变了，原始值也会变)
     mydata.posts[path] = {
       sync: true,
-      id: parseInt(cntSqlRes.rows[0].id),
+      id: postId,
     }
   }
   // 关闭数据库连接

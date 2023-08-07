@@ -191,7 +191,7 @@ class SampleSettingTab extends PluginSettingTab {
           }),
       )
 
-	containerEl.createDiv().setText('DB Init Script')
+    containerEl.createDiv().setText('DB Init Script')
     const sqlEl = containerEl.createEl('textarea')
     sqlEl.setAttr('cols', '100')
     sqlEl.setAttr('rows', '11')
