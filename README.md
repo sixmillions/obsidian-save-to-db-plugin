@@ -1,105 +1,108 @@
-# Obsidian Sample Plugin
+# 说明
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+- 目前仅支持PostgreSQL数据库
 
-This project uses Typescript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in Typescript Definition format, which contains TSDoc comments describing what it does.
+# 使用
 
-**Note:** The Obsidian API is still in early alpha and is subject to change at any time!
+## 创建表
+```sql
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+--文章内容表
+CREATE TABLE tt_content
+(
+    id               BIGSERIAL PRIMARY KEY,
+    ob_path          VARCHAR(1024) NOT NULL UNIQUE,
+    cnt              VARCHAR,
+    deleted          SMALLINT    DEFAULT 0,
+    created_by       VARCHAR(50) DEFAULT 'sys',
+    created_at       TIMESTAMP   DEFAULT NOW(),
+    last_modified_by VARCHAR(50) DEFAULT 'sys',
+    last_modified_at TIMESTAMP   DEFAULT NOW()
+);
 
-## First time developing plugins?
+-- 注释
+COMMENT ON TABLE tt_content IS '文章信息表';
+COMMENT ON COLUMN tt_content.id IS '文章信息id：自增、主键';
+COMMENT ON COLUMN tt_content.ob_path IS 'obsidian中的路径';
+COMMENT ON COLUMN tt_content.cnt IS '文章内容';
+COMMENT ON COLUMN tt_content.deleted IS '逻辑删除（0 未删除、1 删除）；CODE_GROUP: DELETED';
+COMMENT ON COLUMN tt_content.created_by IS '创建人：默认sys';
+COMMENT ON COLUMN tt_content.created_at IS '创建时间：默认当前时间';
+COMMENT ON COLUMN tt_content.last_modified_by IS '更新人：默认sys';
+COMMENT ON COLUMN tt_content.last_modified_at IS '更新时间：默认当前时间';
 
-Quick starting guide for new plugin devs:
+-- 初始数据
+INSERT INTO tt_content (ob_path, cnt)
+VALUES ('obsidian-save-note-to-db.md', '# Hello World');
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+-- 文章基本信息表
+CREATE TABLE tt_post
+(
+    id               BIGINT PRIMARY KEY,
+    slug             VARCHAR(250) NOT NULL UNIQUE,
+    title            VARCHAR(1024),
+    thumbnail        VARCHAR(1024),
+    summary          VARCHAR(2048),
+    status           SMALLINT    DEFAULT 0,
+    top_priority     INT         DEFAULT 0,
+    word_count       INT         DEFAULT 0,
+    view_count       INT         DEFAULT 0,
+    like_count       INT         DEFAULT 0,
+    comment_count    INT         DEFAULT 0,
+    allow_comment    BOOLEAN     DEFAULT TRUE,
+    published_time   TIMESTAMP   DEFAULT NOW(),
+    last_edit_time   TIMESTAMP   DEFAULT NOW(),
+    deleted          SMALLINT    DEFAULT 0,
+    created_by       VARCHAR(50) DEFAULT 'sys',
+    created_at       TIMESTAMP   DEFAULT NOW(),
+    last_modified_by VARCHAR(50) DEFAULT 'sys',
+    last_modified_at TIMESTAMP   DEFAULT NOW()
+);
 
-## Releasing new releases
+-- 注释
+COMMENT ON TABLE tt_post IS '文章信息表';
+COMMENT ON COLUMN tt_post.id IS '文章id：取自tt_content表的id';
+COMMENT ON COLUMN tt_post.slug IS '文章简短url，唯一标识符';
+COMMENT ON COLUMN tt_post.title IS '文章标题';
+COMMENT ON COLUMN tt_post.thumbnail IS '文章缩略图/封面';
+COMMENT ON COLUMN tt_post.summary IS '文章摘要';
+COMMENT ON COLUMN tt_post.status IS '文章状态（0：草稿；1：发布）；CODE_GROUP: POST_STATUS';
+COMMENT ON COLUMN tt_post.top_priority IS '文章优先级（数字越大，优先级越高）';
+COMMENT ON COLUMN tt_post.word_count IS '文章字数';
+COMMENT ON COLUMN tt_post.view_count IS '文章浏览量';
+COMMENT ON COLUMN tt_post.like_count IS '文章点赞数';
+COMMENT ON COLUMN tt_post.comment_count IS '文章评论数量';
+COMMENT ON COLUMN tt_post.allow_comment IS '文章允许评论（true：允许评论；false：不允许评论）';
+COMMENT ON COLUMN tt_post.published_time IS '文章创建时间';
+COMMENT ON COLUMN tt_post.last_edit_time IS '文章最后编辑时间';
+COMMENT ON COLUMN tt_post.deleted IS '逻辑删除（0 未删除、1 删除）；CODE_GROUP: DELETED';
+COMMENT ON COLUMN tt_post.created_by IS '创建人：默认sys';
+COMMENT ON COLUMN tt_post.created_at IS '创建时间：默认当前时间';
+COMMENT ON COLUMN tt_post.last_modified_by IS '更新人：默认sys';
+COMMENT ON COLUMN tt_post.last_modified_at IS '更新时间：默认当前时间';
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
-
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
-
-## Adding your plugin to the community plugin list
-
-- Check https://github.com/obsidianmd/obsidian-releases/blob/master/plugin-review.md
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
-
-## How to use
-
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
-
-## Manually installing the plugin
-
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
-
-## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint .\src\`
-
-## Funding URL
-
-You can include funding URLs where people who use your plugin can financially support it.
-
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
-
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
+-- 初始数据
+INSERT INTO tt_post (id, slug, summary, thumbnail, title, word_count)
+VALUES (1, 'obsidian-save-note-to-db', '保存obsidian笔记到数据库', 'https://s.sixmillions.cn/img/cover/markdown.png',
+        'obsidian插件', 66);
 ```
 
-If you have multiple URLs, you can also do:
+## 配置
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
-```
+在插件配置页，配置数据库连接信息
 
-## API Documentation
+## 其他
 
-See https://github.com/obsidianmd/obsidian-api
+### pg模块参考
 
-## Plugin Api
+> https://developers.cloudflare.com/workers/tutorials/postgres
+
+
+### Plugin Api
 
 > https://docs.obsidian.md/Reference/TypeScript+API/Plugin/loadData
 
-## icon
+### icon
 
 > https://docs.obsidian.md/Plugins/User+interface/Icons
 
@@ -107,18 +110,12 @@ See https://github.com/obsidianmd/obsidian-api
 
 注意：有个别图标没有
 
-## DB
+### front-matter读取
 
-> https://developers.cloudflare.com/workers/tutorials/postgres
+用正则读取后，解析yaml
 
-```sql
-create table ob_post (
-  id BIGSERIAL primary key,
-  file_path VARCHAR(1024) not null unique,
-  cnt VARCHAR,
-  created_by VARCHAR(50) default 'ob',
-  created_at TIMESTAMP default NOW(),
-  last_modified_by VARCHAR(50) default 'ob',
-  last_modified_at TIMESTAMP default NOW()
-);
-```
+> https://github.com/nodeca/js-yaml
+
+常见front-matter
+
+> https://frontmatter.codes/docs/markdown

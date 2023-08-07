@@ -1,25 +1,8 @@
 import { App, Plugin, PluginSettingTab, Setting, setIcon } from "obsidian";
-import { Pool } from "pg";
+import { MyData } from "./src/model";
+import { savePost } from "src/post";
 
 // Remember to rename these classes and interfaces!
-
-export interface Post {
-	sync: boolean;
-	id: number;
-}
-
-export interface DB_URI {
-	host: string;
-	port: number;
-	database: string;
-	user: string;
-	password: string;
-}
-
-interface MyData {
-	mySetting: { db: DB_URI };
-	posts: Record<string, Post>;
-}
 
 const DEFAULT_DATA: MyData = {
 	mySetting: {
@@ -46,38 +29,7 @@ export default class MyPlugin extends Plugin {
 			"database-backup", // 插件图标
 			"Save To DB", // 插件显示
 			async (evt: MouseEvent) => {
-				// 数据库连接
-				const pool = new Pool(this.mydata.mySetting.db);
-				// 插入或者更新语句（根据文章path判断）
-				const upsertSql = `
-        INSERT INTO ob_post (file_path, cnt, created_at) VALUES ($1, $2, $3)
-        ON CONFLICT(file_path) DO UPDATE SET cnt = EXCLUDED.cnt, last_modified_at = now()
-        RETURNING *
-        `;
-				// 获取全部MD文档
-				const files = this.app.vault.getMarkdownFiles();
-				for (let i = 0; i < files.length; i++) {
-					const file = files[i];
-					const path = file.path;
-					// console.log(path, this.mydata.posts[path]?.sync);
-					if (this.mydata.posts[path]?.sync) {
-						// 已同步状态不需要同步
-						continue;
-					}
-					// 读取文章内容
-					const fileCnt = await this.app.vault.read(file);
-					const values = [path, fileCnt, new Date(file.stat.ctime)];
-					// 文章保存到数据库
-					const sqlRes = await pool.query(upsertSql, values);
-					console.log(path, " save-to-db, id: ", sqlRes.rows[0].id);
-					// 同步后文章状态设置为“已同步”
-					this.mydata.posts[path] = {
-						sync: true,
-						id: parseInt(sqlRes.rows[0].id),
-					};
-				}
-				// 关闭数据库连接
-				await pool.end();
+				await savePost(this.app.vault, this.mydata);
 				// 保存obsidian本地数据
 				await this.saveMyData();
 				// 复制到剪切板
