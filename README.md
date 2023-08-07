@@ -5,6 +5,7 @@
 # 使用
 
 ## 创建表
+
 ```sql
 
 --文章内容表
@@ -96,7 +97,6 @@ VALUES (1, 'obsidian-save-note-to-db', '保存obsidian笔记到数据库', 'http
 ### pg模块参考
 
 > https://developers.cloudflare.com/workers/tutorials/postgres
-
 
 ### Plugin Api
 

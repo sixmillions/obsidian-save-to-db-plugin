@@ -1,8 +1,8 @@
-import { load } from "js-yaml";
-import { PostInfo } from "./model";
-import { TFile } from "obsidian";
+import { load } from 'js-yaml'
+import { PostInfo } from './model'
+import { TFile } from 'obsidian'
 
-const YML_RE = /^---\n([\s\S]+?)\n---/;
+const YML_RE = /^---\n([\s\S]+?)\n---/
 
 /**
  * 从文章中提取front-matter，转化为对象
@@ -11,26 +11,25 @@ const YML_RE = /^---\n([\s\S]+?)\n---/;
  * @returns front-matter
  */
 export const getNoteInfo = async (cnt: string, file: TFile) => {
-	const defaultInfo = {
-		title: file.path,
-		slug: file.path,
-		description: file.path,
-		author: "six",
-		data: new Date(file.stat.ctime),
-		cover: "",
-		draft: false,
-		order: 0,
-		wordCount: cnt.length,
-		allowComment: true,
-		tags: [],
-		categories: ["default"],
-	};
-	const matchs = cnt.match(YML_RE);
-	if (matchs) {
-		const info = load(matchs[1]) as PostInfo;
-		console.log(222, info);
-	} else {
-		console.log("no match");
-	}
-	return defaultInfo;
-};
+  const defaultInfo = {
+    title: file.path,
+    slug: file.path,
+    description: file.path,
+    author: 'six',
+    data: new Date(file.stat.ctime),
+    cover: '',
+    draft: false,
+    order: 0,
+    wordCount: cnt.length,
+    allowComment: true,
+    tags: [],
+    categories: ['default'],
+  }
+  const matchs = cnt.match(YML_RE)
+  if (matchs) {
+    const info = load(matchs[1]) as PostInfo
+    return { ...defaultInfo, ...info }
+  }
+  console.log('no match')
+  return defaultInfo
+}
