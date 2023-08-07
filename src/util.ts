@@ -30,6 +30,5 @@ export const getNoteInfo = async (cnt: string, file: TFile) => {
     const info = load(matchs[1]) as PostInfo
     return { ...defaultInfo, ...info }
   }
-  console.log('no match')
   return defaultInfo
 }

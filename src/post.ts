@@ -56,9 +56,8 @@ export const savePost = async (vault: Vault, mydata: MyData) => {
     // 解析front-matter
     const postInfo = await getNoteInfo(fileCnt, file)
     const postInfoValues = postInfoHandler(postInfo, parseInt(cntSqlRes.rows[0].id), file)
-    console.log('postInfoValues', postInfoValues)
     const postInfoSqlRes = await pool.query(upsertPostInfoSql, postInfoValues)
-    console.log('post info :', postInfoSqlRes.rows[0])
+    console.log('post info save success:', postInfoSqlRes.rows[0].title)
     // 同步后文章状态设置为“已同步”
     mydata.posts[path] = {
       sync: true,
@@ -69,6 +68,9 @@ export const savePost = async (vault: Vault, mydata: MyData) => {
   await pool.end()
 }
 
+/**
+ * 构建tt_post表的的填充数据
+ */
 const postInfoHandler = (info: PostInfo, id: number, file: TFile) => {
   // 0：草稿；1：发布
   const status = info.draft ? 0 : 1

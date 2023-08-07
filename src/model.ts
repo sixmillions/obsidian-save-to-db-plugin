@@ -4,11 +4,11 @@ export interface PostInfo {
   description: string
   author: string
   data: Date
-  cover: string
-  draft: boolean
+  cover: string // 封面图片链接
+  draft: boolean // true：草稿；false：发布
   order: number
   wordCount: number
-  allowComment: boolean
+  allowComment: boolean //true：允许评论 false：不允许平路
   tags: string[]
   categories: string[]
 }

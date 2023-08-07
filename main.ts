@@ -1,6 +1,7 @@
 import { App, Plugin, PluginSettingTab, Setting, setIcon } from 'obsidian'
 import { MyData } from './src/model'
 import { savePost } from 'src/post'
+import { DB_INIT_SQL } from 'src/constant'
 
 // Remember to rename these classes and interfaces!
 
@@ -190,19 +191,10 @@ class SampleSettingTab extends PluginSettingTab {
           }),
       )
 
+	containerEl.createDiv().setText('DB Init Script')
     const sqlEl = containerEl.createEl('textarea')
     sqlEl.setAttr('cols', '100')
     sqlEl.setAttr('rows', '11')
-    sqlEl.setText(`
-      create table ob_post (
-        id BIGSERIAL primary key,
-        file_path VARCHAR(1024) not null unique,
-        cnt VARCHAR,
-        created_by VARCHAR(50) default 'ob',
-        created_at TIMESTAMP default NOW(),
-        last_modified_by VARCHAR(50) default 'ob',
-        last_modified_at TIMESTAMP default NOW()
-      );
-    `)
+    sqlEl.setText(DB_INIT_SQL)
   }
 }
