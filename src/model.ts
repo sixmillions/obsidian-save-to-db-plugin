@@ -1,4 +1,4 @@
-export interface PostInfo {
+export interface FrontMatter {
   title: string
   slug: string
   description: string

@@ -4,6 +4,7 @@ CREATE TABLE tt_content
 (
     id               BIGSERIAL PRIMARY KEY,
     ob_path          VARCHAR(1024) NOT NULL UNIQUE,
+    front_matter     VARCHAR,
     cnt              VARCHAR,
     deleted          SMALLINT    DEFAULT 0,
     created_by       VARCHAR(50) DEFAULT 'sys',
@@ -16,6 +17,7 @@ CREATE TABLE tt_content
 COMMENT ON TABLE tt_content IS '文章内容表';
 COMMENT ON COLUMN tt_content.id IS '文章id：自增、主键';
 COMMENT ON COLUMN tt_content.ob_path IS 'obsidian中的路径';
+COMMENT ON COLUMN tt_content.front_matter IS '文章信息';
 COMMENT ON COLUMN tt_content.cnt IS '文章内容';
 COMMENT ON COLUMN tt_content.deleted IS '逻辑删除（0 未删除、1 删除）；CODE_GROUP: DELETED';
 COMMENT ON COLUMN tt_content.created_by IS '创建人：默认sys';

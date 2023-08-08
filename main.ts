@@ -96,7 +96,7 @@ export default class MyPlugin extends Plugin {
    */
   async loadMydata() {
     const data = await this.loadData()
-    console.log('mydata', data)
+    console.log('SaveToDB --- data', data)
     this.mydata = Object.assign({}, DEFAULT_DATA, data)
   }
 

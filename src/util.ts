@@ -1,5 +1,5 @@
 import { load } from 'js-yaml'
-import { PostInfo } from './model'
+import { FrontMatter } from './model'
 import { TFile } from 'obsidian'
 
 const YML_RE = /^---\n([\s\S]+?)\n---/
@@ -10,7 +10,7 @@ const YML_RE = /^---\n([\s\S]+?)\n---/
  * @param cnt 文章内容
  * @returns front-matter
  */
-export const getNoteInfo = async (cnt: string, file: TFile) => {
+export const getFrontMatter = async (cnt: string, file: TFile) => {
   const defaultInfo = {
     title: file.path,
     slug: file.path,
@@ -27,7 +27,7 @@ export const getNoteInfo = async (cnt: string, file: TFile) => {
   }
   const matchs = cnt.match(YML_RE)
   if (matchs) {
-    const info = load(matchs[1]) as PostInfo
+    const info = load(matchs[1]) as FrontMatter
     return { ...defaultInfo, ...info }
   }
   return defaultInfo
