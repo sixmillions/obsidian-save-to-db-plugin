@@ -1,34 +1,17 @@
 import { load } from 'js-yaml'
-import { FrontMatter } from './model'
-import { TFile } from 'obsidian'
 
 const YML_RE = /^---\n([\s\S]+?)\n---/
 
 /**
- * 从文章中提取front-matter，转化为对象
+ * 从包含 YAML 前置数据的文本中提取出 YAML 数据并解析为 JavaScript 对象
+ *
+ * 如果解析失败则返回一个空对象
  *
  * @param cnt 文章内容
  * @returns front-matter
  */
-export const getFrontMatter = async (cnt: string, file: TFile) => {
-  const defaultInfo = {
-    title: file.path,
-    slug: file.path,
-    description: file.path,
-    author: 'six',
-    data: new Date(file.stat.ctime),
-    cover: '',
-    draft: false,
-    order: 0,
-    wordCount: cnt.length,
-    allowComment: true,
-    tags: [],
-    categories: ['default'],
-  }
+export const frontMatterHandle = (cnt: string) => {
   const matchs = cnt.match(YML_RE)
-  if (matchs) {
-    const info = load(matchs[1]) as FrontMatter
-    return { ...defaultInfo, ...info }
-  }
-  return defaultInfo
+  const meta = matchs?.[1] ? load(matchs[1]) : null
+  return meta ?? {}
 }

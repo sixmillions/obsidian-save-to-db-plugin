@@ -1,7 +1,7 @@
 import { TFile, Vault } from 'obsidian'
 import { Pool } from 'pg'
 import { MyData, FrontMatter } from './model'
-import { getFrontMatter } from './util'
+import { frontMatterHandle } from './util'
 
 // 插入或者更新文章内容（根据文章ob_path判断）
 const upsertCntSql = `
@@ -76,7 +76,7 @@ export const savePost = async (vault: Vault, mydata: MyData) => {
     // 读取文章内容
     const fileCnt = await vault.read(file)
     // 解析front-matter
-    const frontMatter = await getFrontMatter(fileCnt, file)
+    const frontMatter = getFrontMatter(fileCnt, file)
 
     // 文章内容保存到数据库
     const cntValues = [path, JSON.stringify(frontMatter), fileCnt, new Date(file.stat.ctime)]
@@ -87,7 +87,7 @@ export const savePost = async (vault: Vault, mydata: MyData) => {
     // 文章信息插入或者更新到数据库
     const postValues = postInfoHandler(frontMatter, postId, file)
     const postInfoSqlRes = await pool.query(upsertPostSql, postValues)
-    console.log('SaveToDB --- upsertPostSql: title(%d)', postInfoSqlRes.rows[0].title)
+    console.log('SaveToDB --- upsertPostSql: title(%s)', postInfoSqlRes.rows[0].title)
 
     // 处理tag
     for (const tag of frontMatter.tags) {
@@ -96,7 +96,6 @@ export const savePost = async (vault: Vault, mydata: MyData) => {
     }
     // 处理category
     for (const category of frontMatter.categories) {
-      console.log(111, category)
       await pool.query(upsertCategorySql, [category.trim()])
       await pool.query(upsertTrCategorySql, [postId, category.trim()])
     }
@@ -108,6 +107,29 @@ export const savePost = async (vault: Vault, mydata: MyData) => {
   }
   // 关闭数据库连接
   await pool.end()
+}
+
+/**
+ * 获取front-matter，没有的赋默认值
+ */
+const getFrontMatter = (cnt: string, file: TFile) => {
+  const defaultInfo: FrontMatter = {
+    title: file.path,
+    slug: file.path,
+    description: file.path,
+    author: 'six',
+    data: new Date(file.stat.ctime),
+    cover: '',
+    draft: false,
+    order: 0,
+    wordCount: cnt.length,
+    allowComment: true,
+    tags: [],
+    categories: ['default'],
+  }
+  const info = frontMatterHandle(cnt)
+  // 浅拷贝，info覆盖defaultInfo
+  return Object.assign({}, defaultInfo, info)
 }
 
 /**
